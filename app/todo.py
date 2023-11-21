@@ -100,7 +100,7 @@ class TodoList(ft.UserControl):
             width=600,
             controls=[
                 ft.Row(
-                    [ft.Text(value="Todos", style=ft.TextThemeStyle.HEADLINE_MEDIUM)],
+                    [ft.Text(value="Dear.Non-Vegan🌱", style=ft.TextThemeStyle.HEADLINE_MEDIUM)],
                     alignment=ft.MainAxisAlignment.CENTER,
                 ),
                 ft.Row(
@@ -116,16 +116,16 @@ class TodoList(ft.UserControl):
                     controls=[
                         self.filter,
                         self.tasks,
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                            controls=[
-                                self.items_left,
-                                ft.OutlinedButton(
-                                    text="Clear!", on_click=self.clear_clicked
-                                 ),
-                            ],
-                        ),
+                        #ft.Row(
+                        #    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        #    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        #    controls=[
+                        #        self.items_left,
+                        #        ft.OutlinedButton(
+                        #            text="Clear!", on_click=self.clear_clicked
+                        #         ),
+                        #    ],
+                        #),
                     ],
                 ),
             ],
