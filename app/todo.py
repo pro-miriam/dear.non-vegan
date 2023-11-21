@@ -1,4 +1,5 @@
 import flet as ft
+import popup
 
 ## 고정 데이터 -> json 으로 db처럼 관리해야할듯 
 initial_task_names = ['비건 만두 먹어보기','비건 화장품 리뷰하기','풀무원 지구식단 구경하기']
@@ -69,11 +70,16 @@ class Task(ft.UserControl):
         self.update()
 
     def status_changed(self, e):
+        popup.open_dlg()
         self.completed = self.display_task.value
         self.task_status_change(self)
 
     def delete_clicked(self, e):
-        self.task_delete(self)
+        self.task_delete(self)   
+
+    def close_dlg(self, e):
+        self.dlg_modal.open = False
+        self.update() 
 
 
 class TodoList(ft.UserControl):
@@ -163,7 +169,7 @@ class TodoList(ft.UserControl):
                 or (status == "할 일" and task.completed == False)
                 or (status == "한 일" and task.completed)
             )
-            print(f"Task: {task.task_name}, Status: {status}, Completed: {task.completed}, Visible: {task.visible}")
+            # print(f"Task: {task.task_name}, Status: {status}, Completed: {task.completed}, Visible: {task.visible}")
             if not task.completed:
                 count += 1
         if count > 0 :
