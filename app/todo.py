@@ -1,4 +1,13 @@
 import flet as ft
+from flet import (
+    ElevatedButton,
+    FilePicker,
+    FilePickerResultEvent,
+    FilePickerUploadFile,
+    TextField
+)
+import util
+from board import Board
 
 ## 고정 데이터 -> json 으로 db처럼 관리해야할듯 
 initial_task_names = ['비건 만두 먹어보기','비건 화장품 리뷰하기','풀무원 지구식단 구경하기']
@@ -10,6 +19,54 @@ class Task(ft.UserControl):
         self.task_name = task_name
         self.task_status_change = task_status_change
         self.task_delete = task_delete
+        self.file_path_tf = None
+        self.file_name = ft.TextField(
+            label="첨부파일 : ",
+            border=ft.InputBorder.NONE,
+            read_only=True
+        )
+        self.file_picker_button = ft.ElevatedButton(
+            "Pick File",
+            icon=ft.icons.UPLOAD_FILE,
+            on_click=self.pick_file,
+        )
+        self.file_picker_dialog = ft.FilePicker(on_result=self.on_file_picker_result)
+
+        self.review_content = ft.TextField(
+                    label="비건해보니 어땠나요? 👀✨",
+                    multiline=True,
+                    min_lines=10,
+                    max_lines=10,
+                )
+
+        self.dlg = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("📝리뷰"),
+            content=
+            ft.Column([
+                self.review_content,
+                self.file_picker_button,
+                self.file_name
+            ]),
+            actions=[
+                ft.TextButton("저장", on_click = self.save_review),
+                ft.TextButton("취소", on_click = self.close_dlg),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+            on_dismiss=lambda e: print("Modal dialog dismissed!")
+        )
+
+    def pick_file(self, _):
+        self.page.overlay.append(self.file_picker_dialog)
+        self.page.update()
+        self.update()
+        self.file_picker_dialog.pick_files()
+
+    def on_file_picker_result(self, e: ft.FilePickerResultEvent):
+        if e.files:
+            self.file_path_tf = e.files[0].path
+            self.file_name.value = e.files[0].name
+            self.file_name.update()
 
     def build(self):
         self.display_task = ft.Checkbox(
@@ -68,13 +125,35 @@ class Task(ft.UserControl):
         self.edit_view.visible = False
         self.update()
 
-    def status_changed(self, e):
+    def status_changed(self, e):  
+        if (not self.completed):
+            self.page.dialog = self.dlg
+            self.dlg.open = True
         self.completed = self.display_task.value
         self.task_status_change(self)
+        self.page.update()
 
     def delete_clicked(self, e):
-        self.task_delete(self)
+        self.task_delete(self)   
 
+    def close_dlg(self, e):
+        self.page.dialog.open = False
+        self.page.update()
+
+    def save_review(self, e):
+        self.page.dialog.open = False
+        file_path = util.copy_file(self.file_path_tf, self.file_name.value)
+        board_list = util.read_board_list()
+        board_list.append({
+            'username': 'reviewer',
+            'user_img': 'images/default_user.png',
+            'content_img': file_path,
+            'content': self.review_content.value
+        })
+        util.write_to_board_list(board_list)
+        self.page.update()
+        self.page.controls.clear()
+        self.page.add(Board(board_list))
 
 class TodoList(ft.UserControl):
     def build(self):
@@ -163,7 +242,7 @@ class TodoList(ft.UserControl):
                 or (status == "할 일" and task.completed == False)
                 or (status == "한 일" and task.completed)
             )
-            print(f"Task: {task.task_name}, Status: {status}, Completed: {task.completed}, Visible: {task.visible}")
+            # print(f"Task: {task.task_name}, Status: {status}, Completed: {task.completed}, Visible: {task.visible}")
             if not task.completed:
                 count += 1
         if count > 0 :
