@@ -3,6 +3,7 @@ from board import Board
 import event
 import todo
 import util
+from popup_color_item import PopupColorItem
 
 ## 게시글 리스트 최초 로드 후 변수 저장 
 boardList = util.read_board_list()
@@ -21,6 +22,10 @@ def main(page: ft.Page):
         
         page.controls.clear()
         page.add(nowPage)
+        page.add(ft.Row(
+            controls=[floating_button1, floating_button2],
+            alignment=ft.MainAxisAlignment.END,  # 하단 정렬
+        ))
 
     # 실제 main 페이지 데이터 노출 영역
     page.title = "NavigationBar Example"
@@ -47,7 +52,50 @@ def main(page: ft.Page):
     # height 판별 후 자동 스크롤
     page.scroll = "AUTO"
 
+    #left_nav = LeftNavigationMenu()
+    dark_light_text = ft.Text("Light theme")
+
+    floating_button1 = ft.FloatingActionButton(
+        content=ft.IconButton(
+                    icon=ft.icons.BRIGHTNESS_2_OUTLINED,
+                    tooltip="Toggle brightness",
+                    on_click=theme_changed
+                ),
+    )
+
+    floating_button2 = ft.FloatingActionButton(
+        content=ft.PopupMenuButton(
+                    icon=ft.icons.COLOR_LENS_OUTLINED,
+                    items=[
+                        PopupColorItem(
+                            color="deeppurple", name="Deep purple"
+                        ),
+                        PopupColorItem(color="indigo", name="Indigo"),
+                        PopupColorItem(color="blue", name="Blue"),
+                        PopupColorItem(color="teal", name="Teal"),
+                        PopupColorItem(color="green", name="Green"),
+                        PopupColorItem(color="yellow", name="Yellow"),
+                        PopupColorItem(color="orange", name="Orange"),
+                        PopupColorItem(
+                            color="deeporange", name="Deep orange"
+                        ),
+                        PopupColorItem(color="pink", name="Pink"),
+                    ],
+                )     
+    )
+
     page.add(todo.render())
+    page.add(ft.Row(
+        controls=[floating_button1, floating_button2],
+        alignment=ft.MainAxisAlignment.END,  # 하단 정렬
+    ))
+
+def theme_changed(self):
+    if self.page.theme_mode == ft.ThemeMode.LIGHT:
+        self.page.theme_mode = ft.ThemeMode.DARK
+    else:
+        self.page.theme_mode = ft.ThemeMode.LIGHT
+    self.page.update()
 
 ft.app(
     target=main,
