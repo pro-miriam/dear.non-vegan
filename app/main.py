@@ -3,7 +3,6 @@ from board import Board
 import event
 import todo
 import util
-from left_navigation_menu import LeftNavigationMenu
 from popup_color_item import PopupColorItem
 
 ## 게시글 리스트 최초 로드 후 변수 저장 
