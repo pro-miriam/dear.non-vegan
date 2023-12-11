@@ -6,7 +6,8 @@ from flet import (
     FilePickerUploadFile,
     TextField
 )
-from main import boardList
+import util
+from board import Board
 
 ## 고정 데이터 -> json 으로 db처럼 관리해야할듯 
 initial_task_names = ['비건 만두 먹어보기','비건 화장품 리뷰하기','풀무원 지구식단 구경하기']
@@ -18,8 +19,8 @@ class Task(ft.UserControl):
         self.task_name = task_name
         self.task_status_change = task_status_change
         self.task_delete = task_delete
-
-        self.file_path_tf = ft.TextField(
+        self.file_path_tf = None
+        self.file_name = ft.TextField(
             label="첨부파일 : ",
             border=ft.InputBorder.NONE,
             read_only=True
@@ -45,7 +46,7 @@ class Task(ft.UserControl):
             ft.Column([
                 self.review_content,
                 self.file_picker_button,
-                self.file_path_tf
+                self.file_name
             ]),
             actions=[
                 ft.TextButton("저장", on_click = self.save_review),
@@ -63,8 +64,9 @@ class Task(ft.UserControl):
 
     def on_file_picker_result(self, e: ft.FilePickerResultEvent):
         if e.files:
-            self.file_path_tf.value = e.files[0].path # e.files[0].path
-            self.file_path_tf.update()
+            self.file_path_tf = e.files[0].path
+            self.file_name.value = e.files[0].name
+            self.file_name.update()
 
     def build(self):
         self.display_task = ft.Checkbox(
@@ -140,14 +142,18 @@ class Task(ft.UserControl):
 
     def save_review(self, e):
         self.page.dialog.open = False
-        #BoardList를 전역으로 사용해야할듯
-        #boardList.append({
-        #    'username': 'reviewer',
-        #    'user_img': 'images/default_user.png',
-        #    'content_img': self.file_path_tf,
-        #    'content': self.review_content
-        #})
+        file_path = util.copy_file(self.file_path_tf, self.file_name.value)
+        board_list = util.read_board_list()
+        board_list.append({
+            'username': 'reviewer',
+            'user_img': 'images/default_user.png',
+            'content_img': file_path,
+            'content': self.review_content.value
+        })
+        util.write_to_board_list(board_list)
         self.page.update()
+        self.page.controls.clear()
+        self.page.add(Board(board_list))
 
 class TodoList(ft.UserControl):
     def build(self):
