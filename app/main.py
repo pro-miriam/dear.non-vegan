@@ -2,11 +2,7 @@ import flet as ft
 from board import Board
 import event
 import todo
-import util
 from popup_color_item import PopupColorItem
-
-## 게시글 리스트 최초 로드 후 변수 저장 
-boardList = util.read_board_list()
 
 def main(page: ft.Page):
     # 각 네비게이션 인덱스에 따라 메인 콘텐츠 변경 노출
@@ -16,7 +12,7 @@ def main(page: ft.Page):
         if (pageIdx == 0):
             nowPage = todo.render()
         elif (pageIdx == 1):
-            nowPage = Board(boardList)
+            nowPage = Board()
         else:
             nowPage = event.render()
         
