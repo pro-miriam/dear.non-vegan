@@ -10,13 +10,27 @@ import util
 from board import Board
 
 ## 고정 데이터 -> json 으로 db처럼 관리해야할듯 
-initial_task_names = ['비건 만두 먹어보기','비건 화장품 리뷰하기','풀무원 지구식단 구경하기']
+initial_tasks = [
+    {
+        'task_name': '비건 만두 먹어보기',
+        'tags': ["비비고만두", "비건만두", "비비고플랜테이블"]
+    },
+    {
+        'task_name': '비건 화장품 리뷰하기',
+        'tags': ["달바비건세럼", "비건세럼"]
+    },
+    {
+        'task_name': '풀무원 지구식단 구경하기',
+        'tags': ["풀무원", "풀무원지구식단", "바른먹거리"]
+    }
+]
 
 class Task(ft.UserControl):
-    def __init__(self, task_name, task_status_change, task_delete):
+    def __init__(self, task, task_status_change, task_delete):
         super().__init__()
         self.completed = False
-        self.task_name = task_name
+        self.task_name = task['task_name']
+        self.task_tags = task['tags']
         self.task_status_change = task_status_change
         self.task_delete = task_delete
         self.file_path_tf = None
@@ -68,6 +82,40 @@ class Task(ft.UserControl):
             self.file_name.value = e.files[0].name
             self.file_name.update()
 
+    # 태그리스트 받아서 링크 클릭 가능한 TextSpan 으로 생성해주는 함수 
+    def setSearchTag(self):
+        tagSpan = []
+        for tag in self.task_tags:
+            tagSpan.append(
+                ft.TextSpan(
+                    text=f"#{tag} ",
+                    url=f"https://search.naver.com/search.naver?query={tag}"
+                )
+            )
+        
+        return tagSpan
+    
+    # 태그 리스트 있을 경우 세팅
+    def renderTaskTags(self):
+        myTags = ft.Text("", height=0)
+        if (len(self.task_tags)):
+            myTags = ft.Container(
+                content=ft.Text(
+                    "",
+                    spans=self.setSearchTag(),
+                    color=ft.colors.BLUE
+                ),
+                padding=ft.padding.only(30, 0, 0, 0)
+            )
+
+        # 텍스트 Element 생성
+        return ft.Column(
+            controls=[
+                self.display_task,
+                myTags
+            ]
+        )
+
     def build(self):
         self.display_task = ft.Checkbox(
             value=False, label=self.task_name, on_change=self.status_changed
@@ -78,7 +126,7 @@ class Task(ft.UserControl):
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                self.display_task,
+                self.renderTaskTags(),
                 ft.Row(
                     spacing=0,
                     controls=[
@@ -94,7 +142,7 @@ class Task(ft.UserControl):
                         ),
                     ],
                 ),
-            ],
+            ]
         )
 
         self.edit_view = ft.Row(
@@ -151,9 +199,10 @@ class Task(ft.UserControl):
             'content': self.review_content.value
         })
         util.write_to_board_list(board_list)
+        self.page.navigation_bar.selected_index = 1
         self.page.update()
         self.page.controls.clear()
-        self.page.add(Board(board_list))
+        self.page.add(Board())
 
 class TodoList(ft.UserControl):
     def build(self):
@@ -163,8 +212,8 @@ class TodoList(ft.UserControl):
         self.tasks = ft.Column()
 
         # 초기 데이터 셋팅
-        for task_name in initial_task_names:
-            self.tasks.controls.append(Task(task_name, self.task_status_change, self.task_delete))
+        for task in initial_tasks:
+            self.tasks.controls.append(Task(task, self.task_status_change, self.task_delete))
  
         self.filter = ft.Tabs(
             scrollable=False,
@@ -212,7 +261,11 @@ class TodoList(ft.UserControl):
 
     def add_clicked(self, e):
         if self.new_task.value:
-            task = Task(self.new_task.value, self.task_status_change, self.task_delete)
+            newTask = {
+                'task_name': self.new_task.value,
+                'tags': []
+            }
+            task = Task(newTask, self.task_status_change, self.task_delete)
             self.tasks.controls.append(task)
             self.new_task.value = ""
             self.new_task.focus_async()

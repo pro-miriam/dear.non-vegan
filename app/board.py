@@ -1,11 +1,12 @@
 ## BOARD PAGE ##
 import flet as ft
+import util
 
 class Board(ft.UserControl):
-    def __init__(self, contents):
+    def __init__(self):
         super().__init__()
         self.showText = []
-        self.contents = contents
+        self.contents = util.read_board_list()
     
     # 나의 탄소 나뭇잎 레벨에 따른 컬러 조회
     def getMyLevelColor(self, lev):
